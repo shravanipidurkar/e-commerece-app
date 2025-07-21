@@ -1,0 +1,252 @@
+/* Container */
+.owner-admin-container {
+    padding: 40px;
+    background-color: #e9e9ea;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+  
+  /* Heading */
+  .owner-admin-heading {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    color: #1f2937;
+    font-family: 'Playfair Display', serif;
+
+  }
+  
+  /* Summary Grid */
+  .owner-admin-summary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-bottom: 40px;
+  }
+  
+  /* Summary Card */
+  .owner-admin-summary-card {
+    flex: 1 1 220px;
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .owner-admin-summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Icon wrapper: circular background */
+  .owner-admin-summary-icon-wrapper {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background-color: #edf2f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Icon itself */
+  .owner-admin-summary-icon {
+    color: #1e40af;
+  }
+  
+  /* Text inside the card */
+  .owner-admin-summary-text {
+    height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .owner-admin-summary-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+  }
+  
+  .owner-admin-summary-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  /* Table Section */
+  .owner-admin-table-wrapper {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  }
+  
+  .owner-admin-table-heading {
+    font-size: 30px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1f2937;
+  }
+  
+  .owner-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    color: #374151;
+    border:1px solid black;
+  }
+  
+  .owner-admin-table th,
+  .owner-admin-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+  }
+  
+  .owner-admin-table th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+    color: #4b5563;
+  }
+  
+  /* Buttons */
+  .owner-admin-btn-enable,
+  .owner-admin-btn-disable {
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .owner-admin-btn-enable {
+    background-color: #10b981;
+    color: white;
+  }
+  
+  .owner-admin-btn-enable:hover {
+    background-color: #059669;
+    transform: scale(1.05);
+  }
+  
+  .owner-admin-btn-disable {
+    background-color: #ef4444;
+    color: white;
+  }
+  
+  .owner-admin-btn-disable:hover {
+    background-color: #dc2626;
+    transform: scale(1.05);
+  }
+  
+  /* Responsive Layout */
+  @media (max-width: 768px) {
+    .owner-admin-summary-grid {
+      flex-direction: column;
+    }
+  
+    .owner-admin-summary-card {
+      flex: 1 1 100%;
+    }
+  
+    .owner-admin-table-wrapper {
+      overflow-x: auto;
+    }
+  }
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .pagination button {
+    padding: 8px 14px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .pagination button:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    transform: scale(1.05);
+  }
+  
+  .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .pagination button.active {
+    background-color: #136ccb;
+    color: white;
+    border-color: #136ccb;
+  }
+  .owner-admin-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    justify-items: center;
+  }
+  .owner-admin-search-input{
+    width: 300px;
+  }
+  .owner-admin-search-input,
+  .owner-admin-select {
+    padding: 8px;
+    font-size: 1rem;
+  }
+  
+  .owner-admin-btn {
+    padding: 8px 16px;
+    background-color: #136ccb;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .owner-admin-btn:hover {
+    background-color: #0056b3;
+  }
+    
+
+  .owner-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .owner-admin-logout-btn {
+    padding: 12px 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button.owner-admin-logout-btn{
+    font-size: 16px;
+    /* background-color: pink; */
+  }
+  .owner-admin-logout-btn:hover {
+    background-color: #c82333;
+  }
+  

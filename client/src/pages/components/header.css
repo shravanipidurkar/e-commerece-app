@@ -1,0 +1,166 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 30px;
+  background: linear-gradient(to right, #fefefe, #f0f4ff);
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 10;
+}
+
+/* Left: Logo + Profile + Hamburger */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.store-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+}
+
+.fallback-logo {
+  font-size: 1.8rem;
+}
+
+.logo-container h2 {
+  font-size: 20px;
+  color: #333;
+  font-weight: 600;
+}
+
+.profile-icon {
+  font-size: 1.6rem;
+  margin-left: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.profile-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Hamburger for small screens */
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+}
+
+/* Middle & Right */
+.header-menu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-grow: 1;
+  gap: 2rem;
+  margin-left: 40px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: #007bff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Icons */
+.header-right a {
+  font-size: 1.3rem;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.header-right a:hover {
+  transform: scale(1.1);
+}
+
+/* Search box */
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background-color: #fff;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  padding: 5px;
+  font-size: 14px;
+  width: 140px;
+}
+
+.search-box span {
+  margin-left: 8px;
+  color: #555;
+  cursor: pointer;
+}
+
+/* 🔻 Responsive */
+@media screen and (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  .header-menu {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 1rem;
+    display: none;
+  }
+
+  .header-menu.open {
+    display: flex;
+    margin-top: 10px;
+  }
+
+  .nav-links,
+  .header-right {
+    flex-direction: column;
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .search-box input {
+    width: 100%;
+  }
+}

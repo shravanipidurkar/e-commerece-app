@@ -1,0 +1,141 @@
+.add-product-wrapper {
+  background-color: #97bdf7;
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.add-product-card {
+  width: 90%;
+  max-width: 1200px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.back-btn {
+  font-size: 1.2rem;
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.heading-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #ffe5e5;
+  color: #d70000;
+}
+
+.save-btn {
+  background-color: #002244;
+  color: white;
+}
+
+.add-product-content {
+  display: flex;
+  margin-top: 1.5rem;
+  gap: 2rem;
+}
+
+.left-panel {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-upload {
+  width: 240px;
+  height: 320px; /* 3:4 aspect ratio */
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fafafa;
+  margin-top: 0.8rem;
+}
+
+.image-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.image-placeholder {
+  color: #888;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.upload-btn {
+  width: 240px;
+  margin-top: 0.8rem;
+  background-color: #002244;
+  color: white;
+  padding: 0.6rem 0;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.right-panel {
+  width: 60%;
+}
+
+form label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: 600;
+  color: #222;
+}
+
+form input,
+form select,
+form textarea {
+  width: 70%;
+  padding: 0.6rem;
+  margin-top: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+

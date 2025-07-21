@@ -1,0 +1,175 @@
+/* Wrapper background and global font */
+.home-wrapper {
+  background: linear-gradient(to top right, #f7faff, #e0edff);
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+/* Navbar */
+.home-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+}
+
+.home-logo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.home-nav-buttons .home-btn {
+  margin-left: 1rem;
+}
+
+/* Hero Section */
+.home-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rem 3rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-text {
+  flex: 1;
+  max-width: 50%;
+  min-width: 320px;
+  position: relative; /* Ensure z-index works */
+  z-index: 2;
+}
+
+.hero-text h1 {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #111;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.hero-text h1 span {
+  color: #0056d2;
+  font-style: italic;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 2rem;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  z-index: 3;
+}
+
+/* Right image */
+.hero-image {
+  flex: 1;
+  display: flex;
+  justify-content: right;
+  animation: float 4s ease-in-out infinite;
+  min-width: 300px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-image img {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  pointer-events: none; /* Allow clicks to pass through */
+}
+
+/* Button styling */
+.home-btn {
+  padding: 0.9rem 1.8rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.home-btn.primary {
+  background-color: #0056d2;
+  color: white;
+  border: none;
+}
+
+.home-btn.primary:hover {
+  background-color: #003e9e;
+}
+
+.home-btn.outline {
+  background: transparent;
+  border: 2px solid #111;
+  color: #111;
+}
+
+.home-btn.outline:hover {
+  background-color: #f0f0f0;
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 960px) {
+  .home-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-text,
+  .hero-image {
+    max-width: 100%;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .home-navbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Back link styles (used on other pages like features) */
+.features-back {
+  padding: 1rem 2rem;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-icon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.back-link:hover {
+  color: #007bff;
+}

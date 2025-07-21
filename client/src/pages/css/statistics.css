@@ -1,0 +1,135 @@
+.statistics-container {
+  padding: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  background: #f9fbff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+}
+
+.total-sales-box {
+  background-color: #fff3cd;
+  padding: 1.2rem 1.5rem;
+  border-left: 5px solid #ffc107;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  max-width: 600px;
+  color: #333;
+}
+
+.total-sales-box h1 {
+  font-weight: bold;
+  color: #003b9f;
+  margin-top: 0.5rem;
+  font-size: 2rem;
+}
+
+.charts-section {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.chart-card {
+  flex: 1 1 calc(50% - 1rem);
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+  max-width: 100%;
+  height: 400px;
+  box-sizing: border-box;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.card-header h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #334155;
+}
+
+.card-header span {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #0d47a1;
+}
+
+.chart-container {
+  flex-grow: 1;
+  position: relative;
+  height: 240px;
+}
+
+.details-btn {
+  margin-top: 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  align-self: flex-start;
+  transition: background-color 0.2s;
+}
+
+.details-btn:hover {
+  background-color: #0056b3;
+}
+
+.raw-data-section {
+  background: #f1f5f9;
+  padding: 1rem;
+  margin-top: 2rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.raw-data-section h4 {
+  margin-bottom: 0.5rem;
+  color: #334155;
+}
+
+@media (max-width: 768px) {
+  .chart-card {
+    flex: 1 1 100%;
+  }
+
+  .charts-section {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .statistics-container {
+    padding: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .total-sales-box h1 {
+    font-size: 1.5rem;
+  }
+}

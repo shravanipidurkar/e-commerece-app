@@ -1,0 +1,103 @@
+/* Make sure page takes full height and removes default spacing */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* Outer wrapper centers everything */
+.login-wrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f2f2f2;
+}
+
+  
+  /* Main login card */
+  .login-box {
+    display: flex;
+    width: 800px;
+    height: 480px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  /* Left side image */
+  .login-image-section {
+    flex: 1;
+    background-color: #ddd;
+  }
+  
+  .login-image-section img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Right side form */
+  .login-form-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .login-form-content {
+    width: 80%;
+  }
+  
+  .login-form-content h2 {
+    font-size: 26px;
+    margin-bottom: 50px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .login-form-content input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+  
+  .login-form-content button {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .login-form-content button:hover {
+    background-color: #0056b3;
+  }
+  
+  .signup-text {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .signup-text span {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .error-msg {
+    color: red;
+    font-size: 13px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  

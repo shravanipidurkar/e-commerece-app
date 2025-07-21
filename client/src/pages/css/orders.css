@@ -1,0 +1,189 @@
+/* Main Container */
+.orders-container {
+  padding: 2rem;
+  background-color: #e0f2fe; /* sky blue background */
+  min-height: 100vh;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+}
+
+/* Heading */
+.orders-container h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+/* Header Section: Search + Add Order */
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-bar input {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: #f5f5f5;
+}
+
+/* Add Order Button */
+.add-order-btn {
+  padding: 1.2rem 2.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+  margin-left: 1rem;
+}
+
+.add-order-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.03);
+}
+
+/* Record Count Buttons */
+.record-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.2rem;
+}
+
+.record-buttons span {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.record-buttons button {
+  padding: 6px 12px;
+  border: 1px solid #9baff1;
+  background: #9cbbf1;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+.record-buttons button:hover {
+  background: #9ba2ef;
+}
+
+/* Table Container */
+.orders-table-container {
+  overflow-x: auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Orders Table */
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table thead {
+  background-color: #fafafa;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 1rem 1.2rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+.orders-table th {
+  color: #444;
+  font-weight: 500;
+}
+
+/* Status Pill Badges */
+.status-badge {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.processing {
+  background-color: #ffeeba;
+  color: #8a6d3b;
+}
+
+.status-badge.shipped {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-badge.delivered,
+.status-badge.completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.cancelled,
+.status-badge.incomplete {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Status Dropdown */
+.status-select {
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+/* Loading & Error States */
+.loading,
+.error {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+  .orders-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .add-order-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .search-bar {
+    width: 100%;
+  }
+
+  .record-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
