@@ -32,8 +32,8 @@ const Statistics = () => {
     const fetchStats = async () => {
       try {
         const [totalRes, dateRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/statistics', { params: { storeId } }),
-          axios.get('http://localhost:5000/api/statistics/by-date', { params: { storeId } }),
+          axios.get(`${process.env.REACT_APP_SERVER_URL}/api/statistics`, { params: { storeId } }),
+          axios.get(`${process.env.REACT_APP_SERVER_URL}/api/statistics/by-date`, { params: { storeId } }),
         ]);
 
         setTotalSales(totalRes.data.total_sales || 0);

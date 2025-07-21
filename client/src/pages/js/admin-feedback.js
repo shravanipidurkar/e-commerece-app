@@ -13,7 +13,7 @@ const Feedback = () => {
     const fetchFeedback = async () => {
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('customerToken');
-        const response = await axios.get('http://localhost:5000/api/feedback', {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/feedback`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setFeedbacks(response.data);

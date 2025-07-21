@@ -25,7 +25,7 @@ const Storetemplate = () => {
   useEffect(() => {
     const fetchStore = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/stores_backup/${storeId}`);
+        const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/stores_backup/${storeId}`);
         setStore(res.data.store);
       } catch (err) {
         console.error('❌ Failed to fetch store info:', err);
@@ -35,7 +35,7 @@ const Storetemplate = () => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('authToken');
       try {
-        const res = await axios.get('http://localhost:5000/api/products', {
+        const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/products`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -55,7 +55,7 @@ const Storetemplate = () => {
     const fetchCategories = async () => {
       const token = localStorage.getItem('authToken');
       try {
-        const res = await axios.get('http://localhost:5000/api/products/categories', {
+        const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/products/categories`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCategories(['All', ...res.data.map(c => c.name)]);
@@ -94,7 +94,7 @@ const Storetemplate = () => {
       {/* Hero Section */}
       <section className="hero">
         <img
-          src={store?.banner_image ? `http://localhost:5000${store.banner_image}` : '/images/default-placeholder.png'}
+          src={store?.banner_image ? `${process.env.REACT_APP_SERVER_URL}${store.banner_image}` : '/images/default-placeholder.png'}
           alt="banner"
           className="hero-img"
         />
@@ -136,7 +136,7 @@ const Storetemplate = () => {
               <img
                 src={
                   product.image_url
-                    ? `http://localhost:5000/${product.image_url}`
+                    ? `${process.env.REACT_APP_SERVER_URL}/${product.image_url}`
                     : '/images/default-placeholder.png'
                 }
                 alt={product.product_name}
@@ -151,7 +151,7 @@ const Storetemplate = () => {
                   const productData = {
                     ...product,
                     image: product.image_url
-                      ? `http://localhost:5000/${product.image_url}`
+                      ? `${process.env.REACT_APP_SERVER_URL}/${product.image_url}`
                       : '/images/default-placeholder.png',
                     quantity: 1,
                   };

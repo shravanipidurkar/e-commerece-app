@@ -87,8 +87,8 @@ export default function Stores() {
   const existingStoreId = localStorage.getItem('storeId');
   const isUpdating = !!existingStoreId;
   const url = isUpdating
-    ? `http://localhost:5000/api/stores_backup/${existingStoreId}`
-    : 'http://localhost:5000/api/stores_backup';
+    ? `${process.env.REACT_APP_SERVER_URL}/api/stores_backup/${existingStoreId}`
+    : `${process.env.REACT_APP_SERVER_URL}/api/stores_backup`;
   const method = isUpdating ? 'PUT' : 'POST';
 
   try {

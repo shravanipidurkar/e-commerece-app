@@ -29,7 +29,7 @@ const Addfeedback = () => {
 const payload = JSON.parse(atob(custoken.split('.')[1]));
     console.log('Decoded token:', payload);
     axios
-      .get('http://localhost:5000/api/products', {
+      .get(`${process.env.REACT_APP_SERVER_URL}/api/products`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -62,7 +62,7 @@ const payload = JSON.parse(atob(custoken.split('.')[1]));
       const review_date = new Date().toISOString().slice(0, 10);
 
       await axios.post(
-  'http://localhost:5000/api/feedback/add',
+  `${process.env.REACT_APP_SERVER_URL}/api/feedback/add`,
   {
     review_date,
     rating,

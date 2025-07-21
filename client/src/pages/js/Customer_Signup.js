@@ -47,7 +47,7 @@ function Customer_Signup() {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/customer/auth/signup', {
+      const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/customer/auth/signup`, {
         customer_name: cusName,
         email: cusEmail,
         password: cusPassword,

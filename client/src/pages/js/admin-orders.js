@@ -15,7 +15,7 @@ const Orders = () => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/orders', {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/orders`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(response.data);
@@ -57,7 +57,7 @@ const Orders = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.put(
-        `http://localhost:5000/api/orders/${orderId}/status`,
+        `${process.env.REACT_APP_SERVER_URL}/api/orders/${orderId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

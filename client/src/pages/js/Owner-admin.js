@@ -34,7 +34,7 @@ const [filterStatus, setFilterStatus] = useState('');
   };
   const fetchSummary = async () => {
     try {
-      const { data } = await axios.get(`http://localhost:5000/api/admin/summary`,config);
+      const { data } = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/admin/summary`,config);
       console.log('Summary data:', data);
 
       setStats({
@@ -50,7 +50,7 @@ const [filterStatus, setFilterStatus] = useState('');
 
   const fetchStores = async () => {
     try {
-      const { data } = await axios.get(`http://localhost:5000/api/admin/stores`, {
+      const { data } = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/admin/stores`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -72,7 +72,7 @@ const [filterStatus, setFilterStatus] = useState('');
     const newStatus = currentStatus === 'enabled' ? 'disabled' : 'enabled';
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/stores/${id}/status`,
+        `${process.env.REACT_APP_SERVER_URL}/api/admin/stores/${id}/status`,
         { status: newStatus },
         config
       );

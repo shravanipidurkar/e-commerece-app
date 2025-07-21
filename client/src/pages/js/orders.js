@@ -25,7 +25,7 @@ const Orders = () => {
           return;
         }
 
-        const response = await axios.get('http://localhost:5000/api/orders', {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/orders`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { storeId }
         });

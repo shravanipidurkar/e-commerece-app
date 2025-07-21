@@ -1,116 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import '../css/admin-products.css';
-// import { useNavigate } from 'react-router-dom';
-
-// const Products = () => {
-//   const [products, setProducts] = useState([]);
-//   const [categories, setCategories] = useState([]);
-//   const [activeCategory, setActiveCategory] = useState('All');
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [isListView, setIsListView] = useState(true);
-
-//   useEffect(() => {
-//     const token = localStorage.getItem('authToken');
-//     fetchProducts(token);
-//     fetchCategories(token);
-//   }, []);
-  
-//   const fetchProducts = async (token) => {
-//     const res = await axios.get('http://localhost:5000/api/products', {
-//       headers: { Authorization: `Bearer ${token}` }
-//     });
-//     setProducts(res.data);
-//   };
-  
-//   const fetchCategories = async (token) => {
-//     const res = await axios.get('http://localhost:5000/api/products/category-counts', {
-//       headers: { Authorization: `Bearer ${token}` }
-//     });
-  
-//     const data = res.data;
-  
-//     // Calculate total count for "All"
-//     const totalCount = data.reduce((sum, cat) => sum + cat.count, 0);
-  
-//     // Set categories with All as the first item
-//     setCategories([{ name: 'All', count: totalCount }, ...data]);
-//   };
-  
-//   const navigate = useNavigate();
-
-
-//   const filteredProducts = products.filter(product => {
-//     const name = product.product_name || '';           // fallback to empty string
-//     const category = product.product_category || '';   // fallback to empty string
-  
-//     const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
-//     const matchCategory = activeCategory === 'All' || category === activeCategory;
-  
-//     return matchSearch && matchCategory;
-//   });
-  
-
-//   return (
-//     <div className="products-container">
-//       <h1>Products</h1>
-
-//       <div className="products-header">
-//         <input
-//           className="search-input"
-//           type="text"
-//           placeholder="Search products..."
-//           value={searchTerm}
-//           onChange={e => setSearchTerm(e.target.value)}
-//         />
-
-//         <div className="products-actions">
-//           <button className="filter-btn">Filter</button>
-//           <button className="add-btn" onClick={() => navigate('/add-product')}>+ Add New Product</button>
-//         </div>
-//       </div>
-
-//       <div className="category-bar">
-//       <div className="category-scroll">
-//   {categories.map(cat => (
-//     <button
-//       key={cat.name}
-//       className={`category-btn ${activeCategory === cat.name ? 'active' : ''}`}
-//       onClick={() => setActiveCategory(cat.name)}
-//     >
-//       {cat.name} ({cat.count})
-//     </button>
-//   ))}
-// </div>
-
-
-//         <div className="category-actions">
-//           <button className="add-category-btn">+ Add Category</button>
-//           <button className="toggle-view-btn" onClick={() => setIsListView(!isListView)}>
-//             {isListView ? '🗂️ Table View' : '📋 List View'}
-//           </button>
-//         </div>
-//       </div>
-
-//       <div className={isListView ? 'product-grid' : 'product-table'}>
-//         {filteredProducts.map(product => (
-//           <div className="product-card" key={product.product_id}>
-//            <img
-//   src={`http://localhost:5000/${product.image_url}`}  // → uploads/laptop.png
-//   alt={product.product_name}
-//   onError={(e) => (e.target.src = '/placeholder.png')} // fallback image
-// />
-
-//             <h3>{product.product_name}</h3>
-//             <p className="category">{product.product_category || 'No Category'}</p>
-//             <p className="price">₹{product.price}</p>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
 // export default Products;
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -145,7 +32,7 @@ const Products = () => {
   }, []);
 
   const fetchProducts = async (token) => {
-    const res = await axios.get('http://localhost:5000/api/products', {
+    const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/products`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     setProducts(res.data);
@@ -164,7 +51,7 @@ const Products = () => {
         maxSold: filters.maxSold,
       };
 
-      const res = await axios.get('http://localhost:5000/api/products/filter', {
+      const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/products/filter`, {
         headers: { Authorization: `Bearer ${token}` },
         params
       });
@@ -177,7 +64,7 @@ const Products = () => {
   };
 
   const fetchCategories = async (token) => {
-    const res = await axios.get('http://localhost:5000/api/products/category-counts', {
+    const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/products/category-counts`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -262,7 +149,7 @@ const Products = () => {
           {filteredProducts.map(product => (
             <div className="product-card" key={product.product_id}>
               <img
-                src={`http://localhost:5000/${product.image_url}`}
+                src={`${process.env.REACT_APP_SERVER_URL}/${product.image_url}`}
                 alt={product.product_name}
                 onError={(e) => (e.target.src = '/placeholder.png')}
               />

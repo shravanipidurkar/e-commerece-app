@@ -22,7 +22,7 @@ const AddOrder = () => {
 
     const fetchCustomers = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/orders/customers_orders', {
+        const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/orders/customers_orders`, {
           params: { storeId }
         });
         setCustomers(res.data);
@@ -33,7 +33,7 @@ const AddOrder = () => {
 
     const fetchProducts = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/orders/products', {
+        const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/orders/products`, {
           params: { storeId }
         });
         setProducts(res.data);
@@ -97,14 +97,14 @@ const AddOrder = () => {
     };
 
     try {
-      const res = await axios.post('http://localhost:5000/api/orders', payload, {
+      const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/orders`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const orderId = res.data.orderId;
 
       if (status === 'Delivered') {
-        await axios.put(`http://localhost:5000/api/orders/${orderId}/status`, {
+        await axios.put(`${process.env.REACT_APP_SERVER_URL}/api/orders/${orderId}/status`, {
           status: 'Delivered',
           storeId: Number(storeId)
         });

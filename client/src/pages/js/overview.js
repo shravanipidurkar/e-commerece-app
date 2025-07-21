@@ -35,7 +35,7 @@ const Overview = () => {
       }
 
       try {
-        const res = await axios.get(`http://localhost:5000/api/overview/${storeId}`);
+        const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/overview/${storeId}`);
         const fetchedData = res.data;
 
         const formattedRevenue = fetchedData.dailyRevenue
@@ -64,7 +64,7 @@ const Overview = () => {
       }
 
       try {
-        const res = await axios.get(`http://localhost:5000/api/stores_backup/${storeId}`, {
+        const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/stores_backup/${storeId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setStore(res.data);

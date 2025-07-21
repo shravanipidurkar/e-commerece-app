@@ -26,7 +26,7 @@ const CustomerProfile = () => {
         const parsed = JSON.parse(localData);
         const customerId = parsed.id;
 
-        const response = await fetch(`http://localhost:5000/api/customers/${customerId}`, {
+        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/customers/${customerId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

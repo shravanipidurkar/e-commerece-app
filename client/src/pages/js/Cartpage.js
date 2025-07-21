@@ -64,7 +64,7 @@ const makepayment = async () => {
     console.log("🛒 Cart Items being sent to backend:", cartItems);
 
 
-    const response = await fetch("http://localhost:5000/api/stripe/create-checkout-session", {
+    const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/stripe/create-checkout-session`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(body)

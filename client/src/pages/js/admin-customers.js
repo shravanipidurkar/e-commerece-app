@@ -15,7 +15,7 @@ const Customers = () => {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get('http://localhost:5000/api/customers', {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/customers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCustomers(response.data);
