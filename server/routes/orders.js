@@ -14,10 +14,12 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// ✅ GET: All orders for a store
+// ✅ GET: all orders for a store
 router.get('/', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) return res.status(400).json({ message: 'Missing storeId' });
+  if (!storeId) {
+    return res.status(400).json({ message: 'Missing storeId' });
+  }
 
   try {
     const [results] = await pool.query(
@@ -30,14 +32,19 @@ router.get('/', async (req, res) => {
     );
     res.json(results);
   } catch (error) {
-    console.error('❌ Error fetching orders:', error);
+    console.error('Error fetching orders:', error);
     res.status(500).json({ message: 'Server error while fetching orders.' });
   }
 });
 
-// ✅ POST: Create new order (corrected snake_case usage)
+// ✅ POST: create new order
 router.post('/', async (req, res) => {
-  const { customer_id, total_amount, status, store_id, items } = req.body;
+  // Accept both camelCase and snake_case
+  const customer_id = req.body.customer_id || req.body.customerId;
+  const total_amount = req.body.total_amount || req.body.totalAmount;
+  const status = req.body.status;
+  const store_id = req.body.store_id || req.body.storeId;
+  const items = req.body.items;
 
   if (!customer_id || !total_amount || !status || !store_id || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({
@@ -57,20 +64,23 @@ router.post('/', async (req, res) => {
 
     const orderId = orderResult.insertId;
 
-    const itemValues = items.map(item => [
+    const values = items.map(item => [
       orderId,
-      item.product_id,
+      item.product_id || item.productId,
       item.quantity,
       store_id
     ]);
 
     await conn.query(
       `INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?`,
-      [itemValues]
+      [values]
     );
 
     await conn.commit();
-    res.status(201).json({ message: '✅ Order and items saved successfully', orderId });
+    res.status(201).json({
+      message: '✅ Order and items saved successfully',
+      orderId
+    });
   } catch (err) {
     await conn.rollback();
     console.error('❌ Error inserting order:', err.message);
@@ -80,45 +90,50 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ PUT: Update order status and record sales if delivered
+// ✅ PUT: update order status and optionally insert into sales
 router.put('/:orderId/status', async (req, res) => {
   const { orderId } = req.params;
-  const { status, store_id } = req.body;
+  const status = req.body.status;
+  const storeId = req.body.store_id || req.body.storeId;
 
-  if (!status || !store_id) {
-    return res.status(400).json({ error: 'Both status and store_id are required' });
+  if (!status || !storeId) {
+    return res.status(400).json({ error: 'Both status and storeId are required in body' });
   }
 
   try {
-    const [updateResult] = await pool.query(
+    const [result] = await pool.query(
       `UPDATE orders o
        JOIN customers c ON o.customer_id = c.customer_id
        SET o.status = ?
        WHERE o.order_id = ? AND c.store_id = ?`,
-      [status, orderId, store_id]
+      [status, orderId, storeId]
     );
 
-    if (updateResult.affectedRows === 0) {
-      return res.status(403).json({ error: 'Order not found or unauthorized' });
+    if (result.affectedRows === 0) {
+      return res.status(403).json({ error: 'Unauthorized: Order not found for this store or not allowed' });
     }
 
     if (status !== 'Delivered') {
       return res.json({ message: '✅ Order status updated successfully' });
     }
 
+    // Record sales if delivered
     const [items] = await pool.query(
       `SELECT 
-         oi.product_id, oi.quantity,
-         p.price, o.customer_id, o.date_ordered
+         oi.product_id,
+         oi.quantity,
+         p.price AS price,
+         o.customer_id,
+         o.date_ordered
        FROM order_items oi
        JOIN orders o ON oi.order_id = o.order_id
        JOIN customers c ON o.customer_id = c.customer_id
        JOIN products p ON oi.product_id = p.product_id
        WHERE oi.order_id = ? AND c.store_id = ?`,
-      [orderId, store_id]
+      [orderId, storeId]
     );
 
-    if (!items.length) {
+    if (!items || items.length === 0) {
       return res.status(404).json({ error: 'No order items found for this order' });
     }
 
@@ -129,7 +144,7 @@ router.put('/:orderId/status', async (req, res) => {
       item.quantity,
       item.price,
       item.price * item.quantity,
-      store_id,
+      storeId,
       item.customer_id
     ]);
 
@@ -142,18 +157,20 @@ router.put('/:orderId/status', async (req, res) => {
       [salesValues]
     );
 
-    res.json({ message: '✅ Order marked as Delivered and sales recorded' });
+    return res.json({ message: '✅ Order marked as Delivered and sales recorded' });
 
   } catch (err) {
-    console.error('❌ Error updating status/inserting sales:', err.message);
+    console.error('❌ Error updating status / inserting sales:', err.message);
     res.status(500).json({ error: 'Failed to update status or record sales' });
   }
 });
 
-// ✅ GET: Products for a store
+// ✅ GET: products for a store
 router.get('/products', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) return res.status(400).json({ error: 'storeId is required in query' });
+  if (!storeId) {
+    return res.status(400).json({ error: 'storeId is required in query' });
+  }
 
   try {
     const [results] = await pool.query(
@@ -167,10 +184,12 @@ router.get('/products', async (req, res) => {
   }
 });
 
-// ✅ GET: Customers for a store
+// ✅ GET: customers filtered by storeId
 router.get('/customers_orders', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) return res.status(400).json({ error: 'storeId is required in query' });
+  if (!storeId) {
+    return res.status(400).json({ error: 'storeId is required in query' });
+  }
 
   try {
     const [results] = await pool.query(
@@ -184,12 +203,14 @@ router.get('/customers_orders', async (req, res) => {
   }
 });
 
-// ✅ POST: Checkout (alternative order placement)
+// ✅ POST: Checkout endpoint (optional)
 router.post('/checkout', async (req, res) => {
-  const { customer_id, items, store_id } = req.body;
+  const customerId = req.body.customer_id || req.body.customerId;
+  const items = req.body.items;
+  const storeId = req.body.store_id || req.body.storeId;
 
-  if (!customer_id || !Array.isArray(items) || items.length === 0 || !store_id) {
-    return res.status(400).json({ error: 'Invalid checkout data (customer_id, items, store_id)' });
+  if (!customerId || !Array.isArray(items) || items.length === 0 || !storeId) {
+    return res.status(400).json({ error: 'Invalid checkout data' });
   }
 
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -200,22 +221,21 @@ router.post('/checkout', async (req, res) => {
     await conn.beginTransaction();
 
     const [orderResult] = await conn.query(
-      `INSERT INTO orders (customer_id, store_id, date_ordered, total_amount, status)
-       VALUES (?, ?, NOW(), ?, 'Pending')`,
-      [customer_id, store_id, totalAmount]
+      'INSERT INTO orders (customer_id, store_id, date_ordered, total_amount, status) VALUES (?, ?, NOW(), ?, ?)',
+      [customerId, storeId, totalAmount, 'Pending']
     );
 
     const orderId = orderResult.insertId;
 
     const itemInserts = items.map(item => [
       orderId,
-      item.product_id,
+      item.product_id || item.productId,
       item.quantity,
-      store_id
+      storeId
     ]);
 
     await conn.query(
-      `INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?`,
+      'INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?',
       [itemInserts]
     );
 
@@ -223,7 +243,7 @@ router.post('/checkout', async (req, res) => {
     res.status(201).json({ message: '✅ Checkout successful', orderId });
   } catch (err) {
     await conn.rollback();
-    console.error('❌ Checkout Error:', err.message);
+    console.error('❌ Checkout Error:', err);
     res.status(500).json({ error: 'Checkout failed' });
   } finally {
     conn.release();
