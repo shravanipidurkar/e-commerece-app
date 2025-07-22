@@ -37,20 +37,22 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ POST: create new order
+// ✅ POST: create new order with items and price
 router.post('/', async (req, res) => {
-  // Accept both camelCase and snake_case
   const customer_id = req.body.customer_id || req.body.customerId;
-  const total_amount = req.body.total_amount || req.body.totalAmount;
-  const status = req.body.status;
   const store_id = req.body.store_id || req.body.storeId;
+  const status = req.body.status || 'Pending';
   const items = req.body.items;
 
-  if (!customer_id || !total_amount || !status || !store_id || !Array.isArray(items) || items.length === 0) {
+  if (!customer_id || !store_id || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({
-      error: 'Missing required fields (customer_id, total_amount, status, store_id, items)'
+      error: 'Missing required fields (customer_id, store_id, items)',
     });
   }
+
+  const total_amount = items.reduce((sum, item) => {
+    return sum + (item.price || 0) * (item.quantity || 0);
+  }, 0);
 
   const conn = await pool.getConnection();
   try {
@@ -68,11 +70,13 @@ router.post('/', async (req, res) => {
       orderId,
       item.product_id || item.productId,
       item.quantity,
+      item.price || 0,
       store_id
     ]);
 
     await conn.query(
-      `INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?`,
+      `INSERT INTO order_items (order_id, product_id, quantity, price, store_id)
+       VALUES ?`,
       [values]
     );
 
@@ -90,7 +94,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ PUT: update order status and optionally insert into sales
+// ✅ PUT: update order status and insert into sales if delivered
 router.put('/:orderId/status', async (req, res) => {
   const { orderId } = req.params;
   const status = req.body.status;
@@ -117,19 +121,16 @@ router.put('/:orderId/status', async (req, res) => {
       return res.json({ message: '✅ Order status updated successfully' });
     }
 
-    // Record sales if delivered
     const [items] = await pool.query(
       `SELECT 
          oi.product_id,
          oi.quantity,
-         p.price AS price,
+         oi.price,
          o.customer_id,
          o.date_ordered
        FROM order_items oi
        JOIN orders o ON oi.order_id = o.order_id
-       JOIN customers c ON o.customer_id = c.customer_id
-       JOIN products p ON oi.product_id = p.product_id
-       WHERE oi.order_id = ? AND c.store_id = ?`,
+       WHERE oi.order_id = ? AND oi.store_id = ?`,
       [orderId, storeId]
     );
 
@@ -184,7 +185,7 @@ router.get('/products', async (req, res) => {
   }
 });
 
-// ✅ GET: customers filtered by storeId
+// ✅ GET: customers for a store
 router.get('/customers_orders', async (req, res) => {
   const storeId = req.query.storeId;
   if (!storeId) {
@@ -203,47 +204,54 @@ router.get('/customers_orders', async (req, res) => {
   }
 });
 
-// ✅ POST: Checkout endpoint (optional)
+// ✅ POST: Checkout endpoint (alternative to direct /orders POST)
 router.post('/checkout', async (req, res) => {
-  const customerId = req.body.customer_id || req.body.customerId;
+  const customer_id = req.body.customer_id || req.body.customerId;
+  const store_id = req.body.store_id || req.body.storeId;
   const items = req.body.items;
-  const storeId = req.body.store_id || req.body.storeId;
 
-  if (!customerId || !Array.isArray(items) || items.length === 0 || !storeId) {
+  if (!customer_id || !store_id || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Invalid checkout data' });
   }
 
-  const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total_amount = items.reduce((sum, item) => {
+    return sum + (item.price || 0) * (item.quantity || 0);
+  }, 0);
 
   const conn = await pool.getConnection();
-
   try {
     await conn.beginTransaction();
 
     const [orderResult] = await conn.query(
-      'INSERT INTO orders (customer_id, store_id, date_ordered, total_amount, status) VALUES (?, ?, NOW(), ?, ?)',
-      [customerId, storeId, totalAmount, 'Pending']
+      `INSERT INTO orders (date_ordered, total_amount, customer_id, status, store_id)
+       VALUES (NOW(), ?, ?, 'Pending', ?)`,
+      [total_amount, customer_id, store_id]
     );
 
     const orderId = orderResult.insertId;
 
-    const itemInserts = items.map(item => [
+    const values = items.map(item => [
       orderId,
       item.product_id || item.productId,
       item.quantity,
-      storeId
+      item.price || 0,
+      store_id
     ]);
 
     await conn.query(
-      'INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?',
-      [itemInserts]
+      `INSERT INTO order_items (order_id, product_id, quantity, price, store_id)
+       VALUES ?`,
+      [values]
     );
 
     await conn.commit();
-    res.status(201).json({ message: '✅ Checkout successful', orderId });
+    res.status(201).json({
+      message: '✅ Checkout successful',
+      orderId
+    });
   } catch (err) {
     await conn.rollback();
-    console.error('❌ Checkout Error:', err);
+    console.error('❌ Checkout error:', err.message);
     res.status(500).json({ error: 'Checkout failed' });
   } finally {
     conn.release();

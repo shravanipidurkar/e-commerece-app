@@ -12,8 +12,8 @@ const AddOrder = () => {
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [items, setItems] = useState([]);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const storeId = localStorage.getItem('storeId');
   const token = localStorage.getItem('token');
 
@@ -46,7 +46,6 @@ const AddOrder = () => {
     fetchProducts();
   }, [storeId]);
 
-  // ✅ Auto-set price from products list when a product is selected
   useEffect(() => {
     const product = products.find(p => p.product_id === Number(selectedProductId));
     if (product) {
@@ -98,7 +97,7 @@ const AddOrder = () => {
 
     try {
       const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/orders`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       const orderId = res.data.orderId;
@@ -159,7 +158,12 @@ const AddOrder = () => {
             </select>
 
             <label>Quantity:</label>
-            <input type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} />
+            <input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={e => setQuantity(e.target.value)}
+            />
 
             <label>Price:</label>
             <input type="number" value={price} readOnly disabled />
@@ -183,9 +187,8 @@ const AddOrder = () => {
             <button type="submit" className="add-order-btn">Submit Order</button>
 
             <button type="button" className="add-order-btn cancel-btn" onClick={() => navigate(-1)}>
-            Cancel
+              Cancel
             </button>
-
           </form>
         </div>
       </div>
