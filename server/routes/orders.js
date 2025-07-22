@@ -35,12 +35,14 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ POST: Create new order
+// ✅ POST: Create new order (corrected snake_case usage)
 router.post('/', async (req, res) => {
-  const { customerId, totalAmount, status, storeId, items } = req.body;
+  const { customer_id, total_amount, status, store_id, items } = req.body;
 
-  if (!customerId || !totalAmount || !status || !storeId || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Missing required fields (customerId, totalAmount, status, storeId, items)' });
+  if (!customer_id || !total_amount || !status || !store_id || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({
+      error: 'Missing required fields (customer_id, total_amount, status, store_id, items)'
+    });
   }
 
   const conn = await pool.getConnection();
@@ -50,7 +52,7 @@ router.post('/', async (req, res) => {
     const [orderResult] = await conn.query(
       `INSERT INTO orders (date_ordered, total_amount, customer_id, status, store_id)
        VALUES (NOW(), ?, ?, ?, ?)`,
-      [totalAmount, customerId, status, storeId]
+      [total_amount, customer_id, status, store_id]
     );
 
     const orderId = orderResult.insertId;
@@ -59,7 +61,7 @@ router.post('/', async (req, res) => {
       orderId,
       item.product_id,
       item.quantity,
-      storeId
+      store_id
     ]);
 
     await conn.query(
@@ -78,13 +80,13 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ PUT: Update order status and insert into sales if delivered
+// ✅ PUT: Update order status and record sales if delivered
 router.put('/:orderId/status', async (req, res) => {
   const { orderId } = req.params;
-  const { status, storeId } = req.body;
+  const { status, store_id } = req.body;
 
-  if (!status || !storeId) {
-    return res.status(400).json({ error: 'Both status and storeId are required' });
+  if (!status || !store_id) {
+    return res.status(400).json({ error: 'Both status and store_id are required' });
   }
 
   try {
@@ -93,7 +95,7 @@ router.put('/:orderId/status', async (req, res) => {
        JOIN customers c ON o.customer_id = c.customer_id
        SET o.status = ?
        WHERE o.order_id = ? AND c.store_id = ?`,
-      [status, orderId, storeId]
+      [status, orderId, store_id]
     );
 
     if (updateResult.affectedRows === 0) {
@@ -104,7 +106,6 @@ router.put('/:orderId/status', async (req, res) => {
       return res.json({ message: '✅ Order status updated successfully' });
     }
 
-    // Record sales
     const [items] = await pool.query(
       `SELECT 
          oi.product_id, oi.quantity,
@@ -114,7 +115,7 @@ router.put('/:orderId/status', async (req, res) => {
        JOIN customers c ON o.customer_id = c.customer_id
        JOIN products p ON oi.product_id = p.product_id
        WHERE oi.order_id = ? AND c.store_id = ?`,
-      [orderId, storeId]
+      [orderId, store_id]
     );
 
     if (!items.length) {
@@ -128,7 +129,7 @@ router.put('/:orderId/status', async (req, res) => {
       item.quantity,
       item.price,
       item.price * item.quantity,
-      storeId,
+      store_id,
       item.customer_id
     ]);
 
@@ -185,10 +186,10 @@ router.get('/customers_orders', async (req, res) => {
 
 // ✅ POST: Checkout (alternative order placement)
 router.post('/checkout', async (req, res) => {
-  const { customerId, items, storeId } = req.body;
+  const { customer_id, items, store_id } = req.body;
 
-  if (!customerId || !Array.isArray(items) || items.length === 0 || !storeId) {
-    return res.status(400).json({ error: 'Invalid checkout data (customerId, items, storeId)' });
+  if (!customer_id || !Array.isArray(items) || items.length === 0 || !store_id) {
+    return res.status(400).json({ error: 'Invalid checkout data (customer_id, items, store_id)' });
   }
 
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -201,7 +202,7 @@ router.post('/checkout', async (req, res) => {
     const [orderResult] = await conn.query(
       `INSERT INTO orders (customer_id, store_id, date_ordered, total_amount, status)
        VALUES (?, ?, NOW(), ?, 'Pending')`,
-      [customerId, storeId, totalAmount]
+      [customer_id, store_id, totalAmount]
     );
 
     const orderId = orderResult.insertId;
@@ -210,7 +211,7 @@ router.post('/checkout', async (req, res) => {
       orderId,
       item.product_id,
       item.quantity,
-      storeId
+      store_id
     ]);
 
     await conn.query(
