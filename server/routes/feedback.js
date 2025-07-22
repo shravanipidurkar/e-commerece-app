@@ -3,6 +3,7 @@ const router = express.Router();
 const mysql = require('mysql2');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -14,36 +15,23 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// // MySQL connection
-// const db = mysql.createConnection({
-//   host: 'localhost',
-//   user: 'root',
-//   password: '',
-//   database: 'e-commerce-db',
-// });
-
-// Middleware to verify JWT and attach user info
+// JWT Auth Middleware
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
-
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'Token missing' });
 
   jwt.verify(token, 'your-secret-key', (err, decoded) => {
     if (err) return res.status(403).json({ message: 'Invalid token' });
-    console.log('✅ Decoded token:', decoded);  // <-- Add this temporarily
-
-    req.user = decoded; // contains user_id, store_id, user_type
+    req.user = decoded;
     next();
   });
 }
 
-// GET /api/feedback - fetch feedback only for the logged-in shop owner's store
+// GET /api/feedback (Shop owner)
 router.get('/', authenticateToken, (req, res) => {
   const { store_id, user_type } = req.user;
 
-
-  // Optional: Only allow shop_owner to access
   if (user_type !== 'shop_owner') {
     return res.status(403).json({ message: 'Access denied' });
   }
@@ -68,40 +56,45 @@ router.get('/', authenticateToken, (req, res) => {
       console.error('Error fetching feedback:', err);
       return res.status(500).json({ error: 'Internal server error' });
     }
-
     res.json(results);
   });
 });
-// POST /api/feedback/add
-router.post('/add', authenticateToken, (req, res) => {
-  console.log('💬 req.user in POST /feedback/add:', req.user);  // already here
-  console.log('💬 user_type:', req.user.user_type);             // add this
-  console.log('💬 customer_id:', req.user.customer_id);         // add this
 
+// POST /api/feedback/add (Customer)
+router.post('/add', authenticateToken, (req, res) => {
   const { rating, product_id, review_description } = req.body;
-  const { customer_id, store_id, user_type } = req.user;
+  const { user_id, store_id, user_type } = req.user;
 
   if (user_type !== 'customer') {
     return res.status(403).json({ message: 'Only customers can submit feedback.' });
   }
-  const review_date = new Date().toISOString().slice(0, 10);
 
-  const sql = `
-    INSERT INTO feedback 
-    (review_date, customer_id, rating, product_id, store_id, review_description) 
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
-  pool.query(sql, [review_date, customer_id, rating, product_id, store_id, review_description], (err) => {
-    if (err) {
-      console.error('Error saving feedback:', err);
-      return res.status(500).json({ message: 'Failed to save feedback' });
+  // First, get the customer_id for this user
+  const getCustomerSql = `SELECT customer_id FROM customers WHERE user_id = ? LIMIT 1`;
+  pool.query(getCustomerSql, [user_id], (err, customerResults) => {
+    if (err || customerResults.length === 0) {
+      console.error('Failed to get customer_id:', err);
+      return res.status(500).json({ message: 'Customer not found' });
     }
 
-    res.status(201).json({ message: 'Feedback submitted successfully' });
+    const customer_id = customerResults[0].customer_id;
+    const review_date = new Date().toISOString().slice(0, 10);
+
+    const insertSql = `
+      INSERT INTO feedback 
+      (review_date, customer_id, rating, product_id, store_id, review_description) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    pool.query(insertSql, [review_date, customer_id, rating, product_id, store_id, review_description], (err2) => {
+      if (err2) {
+        console.error('Error saving feedback:', err2);
+        return res.status(500).json({ message: 'Failed to save feedback' });
+      }
+
+      res.status(201).json({ message: 'Feedback submitted successfully' });
+    });
   });
 });
-
-
 
 module.exports = router;

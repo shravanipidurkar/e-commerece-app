@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
-// 🔁 Promise-based pool
+// Database pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -19,7 +19,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// Multer config
+// Multer config for image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, '../uploads');
@@ -34,7 +34,6 @@ const storage = multer.diskStorage({
     cb(null, uniqueName);
   }
 });
-
 const upload = multer({ storage });
 
 // JWT Middleware
@@ -52,7 +51,7 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// ✅ GET /api/products
+// ✅ GET /api/products - Get all products with total sold
 router.get('/', authenticateToken, async (req, res) => {
   const { store_id } = req.user;
 
@@ -75,12 +74,12 @@ router.get('/', authenticateToken, async (req, res) => {
     const [results] = await pool.query(query, [store_id, store_id]);
     res.json(results);
   } catch (err) {
-    console.error('Error fetching products with total_sold:', err);
+    console.error('Error fetching products:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
 
-// ✅ GET /api/products/categories
+// ✅ GET /api/products/categories - Get unique product categories
 router.get('/categories', authenticateToken, async (req, res) => {
   const { store_id } = req.user;
 
@@ -95,7 +94,7 @@ router.get('/categories', authenticateToken, async (req, res) => {
   }
 });
 
-// ✅ GET /api/products/category-counts
+// ✅ GET /api/products/category-counts - Count products per category
 router.get('/category-counts', authenticateToken, async (req, res) => {
   const { store_id } = req.user;
 
@@ -115,7 +114,7 @@ router.get('/category-counts', authenticateToken, async (req, res) => {
   }
 });
 
-// ✅ POST /api/products/add
+// ✅ POST /api/products/add - Add a new product
 router.post('/add', authenticateToken, upload.single('image'), async (req, res) => {
   const { product_name, price, product_category, description, stock_quantity } = req.body;
   const { store_id } = req.user;
@@ -144,10 +143,15 @@ router.post('/add', authenticateToken, upload.single('image'), async (req, res) 
   }
 });
 
-// ✅ GET /api/products/filter
+// ✅ GET /api/products/filter - Filter products based on multiple conditions
 router.get('/filter', authenticateToken, async (req, res) => {
   const { store_id } = req.user;
-  const { category, minPrice, maxPrice, inStock, search, startDate, endDate, minSold, maxSold } = req.query;
+  const {
+    category, minPrice, maxPrice,
+    inStock, search,
+    startDate, endDate,
+    minSold, maxSold
+  } = req.query;
 
   let query = `
     SELECT 

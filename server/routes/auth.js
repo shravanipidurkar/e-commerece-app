@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 require('dotenv').config();
-// bcrypt removed since it's not used for plain-text passwords
 const mysql = require('mysql2/promise');
 const jwt = require('jsonwebtoken');
-// const pool = require('../routes/db');
+
 
 // DB pool
 // const pool = mysql.createPool({

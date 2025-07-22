@@ -4,6 +4,7 @@ const mysql = require('mysql2');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+// Setup connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -23,14 +24,17 @@ function authenticateToken(req, res, next) {
   if (!token) return res.status(401).json({ message: 'Token missing' });
 
   jwt.verify(token, 'your-secret-key', (err, decoded) => {
-    if (err) return res.status(403).json({ message: 'Invalid token' });
+    if (err) {
+      console.error('JWT verification error:', err);
+      return res.status(403).json({ message: 'Invalid token' });
+    }
 
     req.user = decoded; // contains id, store_id, user_type
     next();
   });
 }
 
-// GET /api/customers
+// GET /api/customers - List all customers for store owner
 router.get('/', authenticateToken, (req, res) => {
   const { store_id, user_type } = req.user;
 
@@ -65,7 +69,7 @@ router.get('/', authenticateToken, (req, res) => {
   });
 });
 
-// POST /api/customers/add
+// POST /api/customers/add - Add new customer
 router.post('/add', authenticateToken, (req, res) => {
   const { store_id } = req.user;
   const { customer_name, email, phone_number, address, password } = req.body;
@@ -83,7 +87,7 @@ router.post('/add', authenticateToken, (req, res) => {
 
   pool.query(sql, values, (err, result) => {
     if (err) {
-      console.error('Error inserting customer:', err);
+      console.error('Error inserting customer:', err.sqlMessage || err);
       return res.status(500).json({ error: 'Database insert failed' });
     }
 
@@ -91,7 +95,7 @@ router.post('/add', authenticateToken, (req, res) => {
   });
 });
 
-// GET /api/customers/:id
+// GET /api/customers/:id - Get customer by ID
 router.get('/:id', authenticateToken, (req, res) => {
   const customerId = req.params.id;
 
@@ -103,7 +107,7 @@ router.get('/:id', authenticateToken, (req, res) => {
 
   pool.query(sql, [customerId], (err, results) => {
     if (err) {
-      console.error('Error fetching customer:', err);
+      console.error('Error fetching customer by ID:', err);
       return res.status(500).json({ error: 'Internal server error' });
     }
 
@@ -115,7 +119,7 @@ router.get('/:id', authenticateToken, (req, res) => {
   });
 });
 
-// GET /api/customers/profile
+// GET /api/customers/profile - Customer self-profile
 router.get('/profile', authenticateToken, (req, res) => {
   const { id, user_type } = req.user;
 
@@ -131,7 +135,7 @@ router.get('/profile', authenticateToken, (req, res) => {
 
   pool.query(sql, [id], (err, results) => {
     if (err) {
-      console.error("Error fetching customer profile:", err);
+      console.error('Error fetching customer profile:', err);
       return res.status(500).json({ message: 'Internal server error' });
     }
 

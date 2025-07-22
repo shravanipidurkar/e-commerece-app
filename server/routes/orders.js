@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2/promise');
 require('dotenv').config();
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -13,20 +14,10 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// ✅ DB connection
-// const db = mysql.createPool({
-//   host: 'localhost',
-//   user: 'root',
-//   password: '',
-//   database: 'e-commerce-db',
-// });
-
-// ✅ GET: all orders for a store
+// GET all orders for a store
 router.get('/', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) {
-    return res.status(400).json({ message: 'Missing storeId' });
-  }
+  if (!storeId) return res.status(400).json({ message: 'Missing storeId' });
 
   try {
     const [results] = await pool.query(
@@ -38,22 +29,22 @@ router.get('/', async (req, res) => {
       [storeId]
     );
     res.json(results);
-  } catch (error) {
-    console.error('Error fetching orders:', error);
+  } catch (err) {
+    console.error('❌ Error fetching orders:', err.message);
     res.status(500).json({ message: 'Server error while fetching orders.' });
   }
 });
 
-// ✅ POST: create new order
+// POST create new order
 router.post('/', async (req, res) => {
   const { customer_id, total_amount, status, items, store_id } = req.body;
-
   if (!customer_id || !total_amount || !status || !store_id || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Missing required fields (customer_id, total_amount, status, store_id, items)' });
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const conn = await pool.getConnection();
+  let conn;
   try {
+    conn = await pool.getConnection();
     await conn.beginTransaction();
 
     const [orderResult] = await conn.query(
@@ -61,7 +52,6 @@ router.post('/', async (req, res) => {
        VALUES (NOW(), ?, ?, ?, ?)`,
       [total_amount, customer_id, status, store_id]
     );
-
     const orderId = orderResult.insertId;
 
     const values = items.map(item => [
@@ -77,27 +67,21 @@ router.post('/', async (req, res) => {
     );
 
     await conn.commit();
-    res.status(201).json({
-      message: '✅ Order and items saved successfully',
-      orderId
-    });
+    res.status(201).json({ message: '✅ Order and items saved successfully', orderId });
   } catch (err) {
-    await conn.rollback();
+    if (conn) await conn.rollback();
     console.error('❌ Error inserting order:', err.message);
     res.status(500).json({ error: 'Database error while inserting order' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
-// ✅ PUT: update order status and optionally insert into sales
+// PUT update order status + insert into sales if Delivered
 router.put('/:orderId/status', async (req, res) => {
   const { orderId } = req.params;
   const { status, storeId } = req.body;
-
-  if (!status || !storeId) {
-    return res.status(400).json({ error: 'Both status and storeId are required in body' });
-  }
+  if (!status || !storeId) return res.status(400).json({ error: 'Missing status or storeId' });
 
   try {
     const [result] = await pool.query(
@@ -109,21 +93,17 @@ router.put('/:orderId/status', async (req, res) => {
     );
 
     if (result.affectedRows === 0) {
-      return res.status(403).json({ error: 'Unauthorized: Order not found for this store or not allowed' });
+      return res.status(403).json({ error: 'Unauthorized or order not found' });
     }
 
     if (status !== 'Delivered') {
       return res.json({ message: '✅ Order status updated successfully' });
     }
 
-    // Record sales if delivered
     const [items] = await pool.query(
       `SELECT 
-         oi.product_id,
-         oi.quantity,
-         p.price AS price,
-         o.customer_id,
-         o.date_ordered
+         oi.product_id, oi.quantity, p.price,
+         o.customer_id, o.date_ordered
        FROM order_items oi
        JOIN orders o ON oi.order_id = o.order_id
        JOIN customers c ON o.customer_id = c.customer_id
@@ -133,7 +113,7 @@ router.put('/:orderId/status', async (req, res) => {
     );
 
     if (!items || items.length === 0) {
-      return res.status(404).json({ error: 'No order items found for this order' });
+      return res.status(404).json({ error: 'No order items found' });
     }
 
     const salesValues = items.map(item => [
@@ -156,20 +136,17 @@ router.put('/:orderId/status', async (req, res) => {
       [salesValues]
     );
 
-    return res.json({ message: '✅ Order marked as Delivered and sales recorded' });
-
+    res.json({ message: '✅ Delivered and sales recorded' });
   } catch (err) {
-    console.error('❌ Error updating status / inserting sales:', err.message);
+    console.error('❌ Error updating status or recording sales:', err.message);
     res.status(500).json({ error: 'Failed to update status or record sales' });
   }
 });
 
-// ✅ GET: products for a store
+// GET products by store
 router.get('/products', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) {
-    return res.status(400).json({ error: 'storeId is required in query' });
-  }
+  if (!storeId) return res.status(400).json({ error: 'Missing storeId' });
 
   try {
     const [results] = await pool.query(
@@ -179,16 +156,14 @@ router.get('/products', async (req, res) => {
     res.json(results);
   } catch (err) {
     console.error('🔴 Error fetching products:', err.message);
-    res.status(500).json({ error: 'Database error while fetching products' });
+    res.status(500).json({ error: 'Error fetching products' });
   }
 });
 
-// ✅ GET: customers filtered by storeId
+// GET customers by store
 router.get('/customers_orders', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) {
-    return res.status(400).json({ error: 'storeId is required in query' });
-  }
+  if (!storeId) return res.status(400).json({ error: 'Missing storeId' });
 
   try {
     const [results] = await pool.query(
@@ -198,30 +173,28 @@ router.get('/customers_orders', async (req, res) => {
     res.json(results);
   } catch (err) {
     console.error('🔴 Error fetching customers:', err.message);
-    res.status(500).json({ error: 'Database error while fetching customers' });
+    res.status(500).json({ error: 'Error fetching customers' });
   }
 });
 
-// ✅ POST: Checkout endpoint (optional)
+// POST checkout
 router.post('/checkout', async (req, res) => {
   const { customerId, items } = req.body;
-
   if (!customerId || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Invalid checkout data' });
   }
 
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  const conn = await pool.getConnection();
-
+  let conn;
   try {
+    conn = await pool.getConnection();
     await conn.beginTransaction();
 
     const [orderResult] = await conn.query(
-      'INSERT INTO orders (customer_id, date_ordered, total_amount, status) VALUES (?, NOW(), ?, ?)',
+      `INSERT INTO orders (customer_id, date_ordered, total_amount, status)
+       VALUES (?, NOW(), ?, ?)`,
       [customerId, totalAmount, 'Pending']
     );
-
     const orderId = orderResult.insertId;
 
     const itemInserts = items.map(item => [
@@ -229,18 +202,18 @@ router.post('/checkout', async (req, res) => {
     ]);
 
     await conn.query(
-      'INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?',
+      `INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?`,
       [itemInserts]
     );
 
     await conn.commit();
-    res.status(201).json({ message: 'Order placed', orderId });
+    res.status(201).json({ message: '✅ Order placed', orderId });
   } catch (err) {
-    await conn.rollback();
-    console.error('❌ Checkout Error:', err);
+    if (conn) await conn.rollback();
+    console.error('❌ Checkout Error:', err.message);
     res.status(500).json({ error: 'Checkout failed' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
