@@ -14,7 +14,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// GET all orders for a store
+// ✅ GET: All orders for a store
 router.get('/', async (req, res) => {
   const storeId = req.query.storeId;
   if (!storeId) return res.status(400).json({ message: 'Missing storeId' });
@@ -29,62 +29,66 @@ router.get('/', async (req, res) => {
       [storeId]
     );
     res.json(results);
-  } catch (err) {
-    console.error('❌ Error fetching orders:', err.message);
+  } catch (error) {
+    console.error('❌ Error fetching orders:', error);
     res.status(500).json({ message: 'Server error while fetching orders.' });
   }
 });
 
-// POST create new order
+// ✅ POST: Create new order
 router.post('/', async (req, res) => {
-  const { customer_id, total_amount, status, items, store_id } = req.body;
-  if (!customer_id || !total_amount || !status || !store_id || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  const { customerId, totalAmount, status, storeId, items } = req.body;
+
+  if (!customerId || !totalAmount || !status || !storeId || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'Missing required fields (customerId, totalAmount, status, storeId, items)' });
   }
 
-  let conn;
+  const conn = await pool.getConnection();
   try {
-    conn = await pool.getConnection();
     await conn.beginTransaction();
 
     const [orderResult] = await conn.query(
       `INSERT INTO orders (date_ordered, total_amount, customer_id, status, store_id)
        VALUES (NOW(), ?, ?, ?, ?)`,
-      [total_amount, customer_id, status, store_id]
+      [totalAmount, customerId, status, storeId]
     );
+
     const orderId = orderResult.insertId;
 
-    const values = items.map(item => [
+    const itemValues = items.map(item => [
       orderId,
       item.product_id,
       item.quantity,
-      store_id
+      storeId
     ]);
 
     await conn.query(
       `INSERT INTO order_items (order_id, product_id, quantity, store_id) VALUES ?`,
-      [values]
+      [itemValues]
     );
 
     await conn.commit();
     res.status(201).json({ message: '✅ Order and items saved successfully', orderId });
   } catch (err) {
-    if (conn) await conn.rollback();
+    await conn.rollback();
     console.error('❌ Error inserting order:', err.message);
     res.status(500).json({ error: 'Database error while inserting order' });
   } finally {
-    if (conn) conn.release();
+    conn.release();
   }
 });
 
-// PUT update order status + insert into sales if Delivered
+// ✅ PUT: Update order status and insert into sales if delivered
 router.put('/:orderId/status', async (req, res) => {
   const { orderId } = req.params;
   const { status, storeId } = req.body;
-  if (!status || !storeId) return res.status(400).json({ error: 'Missing status or storeId' });
+
+  if (!status || !storeId) {
+    return res.status(400).json({ error: 'Both status and storeId are required' });
+  }
 
   try {
-    const [result] = await pool.query(
+    const [updateResult] = await pool.query(
       `UPDATE orders o
        JOIN customers c ON o.customer_id = c.customer_id
        SET o.status = ?
@@ -92,18 +96,19 @@ router.put('/:orderId/status', async (req, res) => {
       [status, orderId, storeId]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(403).json({ error: 'Unauthorized or order not found' });
+    if (updateResult.affectedRows === 0) {
+      return res.status(403).json({ error: 'Order not found or unauthorized' });
     }
 
     if (status !== 'Delivered') {
       return res.json({ message: '✅ Order status updated successfully' });
     }
 
+    // Record sales
     const [items] = await pool.query(
       `SELECT 
-         oi.product_id, oi.quantity, p.price,
-         o.customer_id, o.date_ordered
+         oi.product_id, oi.quantity,
+         p.price, o.customer_id, o.date_ordered
        FROM order_items oi
        JOIN orders o ON oi.order_id = o.order_id
        JOIN customers c ON o.customer_id = c.customer_id
@@ -112,8 +117,8 @@ router.put('/:orderId/status', async (req, res) => {
       [orderId, storeId]
     );
 
-    if (!items || items.length === 0) {
-      return res.status(404).json({ error: 'No order items found' });
+    if (!items.length) {
+      return res.status(404).json({ error: 'No order items found for this order' });
     }
 
     const salesValues = items.map(item => [
@@ -136,17 +141,18 @@ router.put('/:orderId/status', async (req, res) => {
       [salesValues]
     );
 
-    res.json({ message: '✅ Delivered and sales recorded' });
+    res.json({ message: '✅ Order marked as Delivered and sales recorded' });
+
   } catch (err) {
-    console.error('❌ Error updating status or recording sales:', err.message);
+    console.error('❌ Error updating status/inserting sales:', err.message);
     res.status(500).json({ error: 'Failed to update status or record sales' });
   }
 });
 
-// GET products by store
+// ✅ GET: Products for a store
 router.get('/products', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) return res.status(400).json({ error: 'Missing storeId' });
+  if (!storeId) return res.status(400).json({ error: 'storeId is required in query' });
 
   try {
     const [results] = await pool.query(
@@ -156,14 +162,14 @@ router.get('/products', async (req, res) => {
     res.json(results);
   } catch (err) {
     console.error('🔴 Error fetching products:', err.message);
-    res.status(500).json({ error: 'Error fetching products' });
+    res.status(500).json({ error: 'Database error while fetching products' });
   }
 });
 
-// GET customers by store
+// ✅ GET: Customers for a store
 router.get('/customers_orders', async (req, res) => {
   const storeId = req.query.storeId;
-  if (!storeId) return res.status(400).json({ error: 'Missing storeId' });
+  if (!storeId) return res.status(400).json({ error: 'storeId is required in query' });
 
   try {
     const [results] = await pool.query(
@@ -173,32 +179,38 @@ router.get('/customers_orders', async (req, res) => {
     res.json(results);
   } catch (err) {
     console.error('🔴 Error fetching customers:', err.message);
-    res.status(500).json({ error: 'Error fetching customers' });
+    res.status(500).json({ error: 'Database error while fetching customers' });
   }
 });
 
-// POST checkout
+// ✅ POST: Checkout (alternative order placement)
 router.post('/checkout', async (req, res) => {
-  const { customerId, items } = req.body;
-  if (!customerId || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Invalid checkout data' });
+  const { customerId, items, storeId } = req.body;
+
+  if (!customerId || !Array.isArray(items) || items.length === 0 || !storeId) {
+    return res.status(400).json({ error: 'Invalid checkout data (customerId, items, storeId)' });
   }
 
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  let conn;
+
+  const conn = await pool.getConnection();
+
   try {
-    conn = await pool.getConnection();
     await conn.beginTransaction();
 
     const [orderResult] = await conn.query(
-      `INSERT INTO orders (customer_id, date_ordered, total_amount, status)
-       VALUES (?, NOW(), ?, ?)`,
-      [customerId, totalAmount, 'Pending']
+      `INSERT INTO orders (customer_id, store_id, date_ordered, total_amount, status)
+       VALUES (?, ?, NOW(), ?, 'Pending')`,
+      [customerId, storeId, totalAmount]
     );
+
     const orderId = orderResult.insertId;
 
     const itemInserts = items.map(item => [
-      orderId, item.product_id, item.quantity, item.store_id
+      orderId,
+      item.product_id,
+      item.quantity,
+      storeId
     ]);
 
     await conn.query(
@@ -207,13 +219,13 @@ router.post('/checkout', async (req, res) => {
     );
 
     await conn.commit();
-    res.status(201).json({ message: '✅ Order placed', orderId });
+    res.status(201).json({ message: '✅ Checkout successful', orderId });
   } catch (err) {
-    if (conn) await conn.rollback();
+    await conn.rollback();
     console.error('❌ Checkout Error:', err.message);
     res.status(500).json({ error: 'Checkout failed' });
   } finally {
-    if (conn) conn.release();
+    conn.release();
   }
 });
 
